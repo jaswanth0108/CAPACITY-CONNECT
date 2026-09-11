@@ -1,9 +1,9 @@
 import prisma from './prisma';
 import bcryptjs from 'bcryptjs';
 
-export async function runSeed() {
+export async function runSeed(force = false) {
   const userCount = await prisma.user.count();
-  if (userCount > 0) {
+  if (!force && userCount > 0) {
     console.log('Database already has users, skipping seed');
     return { success: true, message: 'Database already seeded', userCount };
   }
