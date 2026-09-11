@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { runSeed } from '@/lib/seed';
 
 // GET /api/courses
 export async function GET(req: NextRequest) {
+  try {
+    const userCount = await prisma.user.count();
+    if (userCount === 0) {
+      await runSeed();
+    }
+  } catch (e) {
+    console.warn('Auto-seed check error:', e);
+  }
   const { searchParams } = new URL(req.url);
   const competencyId = searchParams.get('competencyId');
   const trainerId = searchParams.get('trainerId');

@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { runSeed } from '@/lib/seed';
 
 // GET /api/competencies
 export async function GET(req: NextRequest) {
+  let count = await prisma.competency.count();
+  if (count === 0) {
+    await runSeed();
+  }
+
   const competencies = await prisma.competency.findMany({
     include: {
       scores: true,

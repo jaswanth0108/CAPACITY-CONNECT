@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { runSeed } from '@/lib/seed';
 
 // GET /api/analytics
 export async function GET(req: NextRequest) {
-  // 1. User metrics
-  const totalUsers = await prisma.user.count();
+  let totalUsers = await prisma.user.count();
+  if (totalUsers === 0) {
+    await runSeed();
+    totalUsers = await prisma.user.count();
+  }
   const traineesCount = await prisma.user.count({ where: { role: 'TRAINEE' } });
   const trainersCount = await prisma.user.count({ where: { role: 'TRAINER' } });
   const pendingUsersCount = await prisma.user.count({ where: { status: 'PENDING' } });

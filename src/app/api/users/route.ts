@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { runSeed } from '@/lib/seed';
 
 // GET /api/users — List users (admin)
 export async function GET(req: NextRequest) {
+  try {
+    const userCount = await prisma.user.count();
+    if (userCount === 0) {
+      await runSeed();
+    }
+  } catch (e) {
+    console.warn('Auto-seed check error:', e);
+  }
   const { searchParams } = new URL(req.url);
   const role = searchParams.get('role');
   const status = searchParams.get('status');

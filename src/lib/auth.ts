@@ -2,6 +2,7 @@ import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import prisma from './prisma';
+import { runSeed } from './seed';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -14,6 +15,16 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error('Email and password are required');
+        }
+
+        // Auto-seed if database is empty (e.g. fresh Vercel deployment)
+        try {
+          const userCount = await prisma.user.count();
+          if (userCount === 0) {
+            await runSeed();
+          }
+        } catch (e) {
+          console.warn('Auto-seed check error:', e);
         }
 
         const user = await prisma.user.findUnique({
